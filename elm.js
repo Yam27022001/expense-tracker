@@ -5008,6 +5008,7 @@ var author$project$Main$view = function (model) {
 						A2(elm$html$Html$Attributes$style, 'flex-direction', 'column'),
 						A2(elm$html$Html$Attributes$style, 'border', '2px solid green'),
 						A2(elm$html$Html$Attributes$style, 'padding-left', '10px'),
+						A2(elm$html$Html$Attributes$style, 'padding-right', '10px'),
 						A2(elm$html$Html$Attributes$style, 'padding-bottom', '10px'),
 						A2(elm$html$Html$Attributes$style, 'width', '400px')
 					]),
@@ -5147,6 +5148,59 @@ var author$project$Main$view = function (model) {
 										elm$html$Html$text(
 										elm$core$String$fromInt(model.balance))
 									]))
+							]))
+					])),
+				A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2(elm$html$Html$Attributes$style, 'display', 'flex'),
+						A2(elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+						A2(elm$html$Html$Attributes$style, 'border', '2px solid red'),
+						A2(elm$html$Html$Attributes$style, 'padding-left', '10px'),
+						A2(elm$html$Html$Attributes$style, 'padding-right', '10px'),
+						A2(elm$html$Html$Attributes$style, 'padding-bottom', '10px'),
+						A2(elm$html$Html$Attributes$style, 'width', '400px'),
+						A2(elm$html$Html$Attributes$style, 'margin-top', '10px')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$h2,
+						_List_fromArray(
+							[
+								A2(elm$html$Html$Attributes$style, 'font-weight', 'normal'),
+								A2(elm$html$Html$Attributes$style, 'font-size', '20px')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('Please Enter Your Expense')
+							])),
+						A2(elm$html$Html$input, _List_Nil, _List_Nil),
+						A2(
+						elm$html$Html$h2,
+						_List_fromArray(
+							[
+								A2(elm$html$Html$Attributes$style, 'font-size', '20px'),
+								A2(elm$html$Html$Attributes$style, 'font-weight', 'normal')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('Please Enter Your Expense Amount')
+							])),
+						A2(elm$html$Html$input, _List_Nil, _List_Nil),
+						A2(
+						elm$html$Html$button,
+						_List_fromArray(
+							[
+								A2(elm$html$Html$Attributes$style, 'margin-top', '12px'),
+								A2(elm$html$Html$Attributes$style, 'border', '2px solid red'),
+								A2(elm$html$Html$Attributes$style, 'width', '100px'),
+								A2(elm$html$Html$Attributes$style, 'color', 'red')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('Add')
 							]))
 					]))
 			]));

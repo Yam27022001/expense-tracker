@@ -65,6 +65,7 @@ view model =
             , style "flex-direction" "column"
             , style "border" "2px solid green"
             , style "padding-left" "10px"
+            , style "padding-right" "10px"
             , style "padding-bottom" "10px"
             , style "width" "400px" 
             ] [
@@ -108,6 +109,30 @@ view model =
                     ][] 
                 , div[] [text (String.fromInt model.balance)] 
             ]
+        ]
+        , div [style "display" "flex"
+                , style "flex-direction" "column"
+                , style "border" "2px solid red"
+                , style "padding-left" "10px"
+                , style "padding-right" "10px"
+                , style "padding-bottom" "10px"
+                , style "width" "400px" 
+                , style "margin-top" "10px"
+            ][
+                h2 [style "font-weight" "normal"
+                   , style "font-size" "20px"
+                ] [text "Please Enter Your Expense"]
+                , input [] []
+                , h2 [style "font-size" "20px"
+                    , style "font-weight" "normal"
+                ] [text "Please Enter Your Expense Amount"]
+                , input [] []
+                , button [style "margin-top" "12px"
+                    , style "border" "2px solid red"
+                    , style "width" "100px"
+                    , style "color" "red"
+                ][text "Add"]
+              
         ]
        
     ]
