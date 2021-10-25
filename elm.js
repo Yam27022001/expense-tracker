@@ -4877,6 +4877,7 @@ var elm$html$Html$button = _VirtualDom_node('button');
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$h1 = _VirtualDom_node('h1');
 var elm$html$Html$h2 = _VirtualDom_node('h2');
+var elm$html$Html$img = _VirtualDom_node('img');
 var elm$html$Html$input = _VirtualDom_node('input');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
@@ -4888,6 +4889,14 @@ var elm$html$Html$Attributes$stringProperty = F2(
 			key,
 			elm$json$Json$Encode$string(string));
 	});
+var elm$html$Html$Attributes$src = function (url) {
+	return A2(
+		elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
+};
+var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var elm$html$Html$Attributes$style = elm$virtual_dom$VirtualDom$style;
 var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
 var elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
@@ -4989,85 +4998,155 @@ var author$project$Main$view = function (model) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						elm$html$Html$text('Enter the Budget')
+						elm$html$Html$text('TRACK YOUR BUDGET')
 					])),
 				A2(
-				elm$html$Html$input,
+				elm$html$Html$div,
 				_List_fromArray(
 					[
-						elm$html$Html$Attributes$value(
-						elm$core$String$fromInt(model.budget)),
-						elm$html$Html$Events$onInput(author$project$Main$Budget)
+						A2(elm$html$Html$Attributes$style, 'display', 'flex'),
+						A2(elm$html$Html$Attributes$style, 'flex-direction', 'column'),
+						A2(elm$html$Html$Attributes$style, 'border', '2px solid green'),
+						A2(elm$html$Html$Attributes$style, 'padding-left', '10px'),
+						A2(elm$html$Html$Attributes$style, 'padding-bottom', '10px'),
+						A2(elm$html$Html$Attributes$style, 'width', '400px')
 					]),
-				_List_Nil),
-				A2(
-				elm$html$Html$button,
-				_List_Nil,
-				_List_fromArray(
-					[
-						elm$html$Html$text('Calculate')
-					])),
-				A2(
-				elm$html$Html$div,
-				_List_Nil,
 				_List_fromArray(
 					[
 						A2(
 						elm$html$Html$h2,
-						_List_Nil,
 						_List_fromArray(
 							[
-								elm$html$Html$text('Budget')
+								A2(elm$html$Html$Attributes$style, 'font-weight', 'normal'),
+								A2(elm$html$Html$Attributes$style, 'font-size', '20px')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('Please Enter Your Budget')
 							])),
 						A2(
-						elm$html$Html$div,
-						_List_Nil,
+						elm$html$Html$input,
 						_List_fromArray(
 							[
-								elm$html$Html$text(
-								elm$core$String$fromInt(model.budget))
+								elm$html$Html$Attributes$value(
+								elm$core$String$fromInt(model.budget)),
+								elm$html$Html$Events$onInput(author$project$Main$Budget)
+							]),
+						_List_Nil),
+						A2(
+						elm$html$Html$button,
+						_List_fromArray(
+							[
+								A2(elm$html$Html$Attributes$style, 'margin-top', '12px'),
+								A2(elm$html$Html$Attributes$style, 'border', '2px solid green'),
+								A2(elm$html$Html$Attributes$style, 'width', '100px'),
+								A2(elm$html$Html$Attributes$style, 'color', 'green')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('Calculate')
 							]))
 					])),
 				A2(
 				elm$html$Html$div,
-				_List_Nil,
+				_List_fromArray(
+					[
+						A2(elm$html$Html$Attributes$style, 'display', 'flex'),
+						A2(elm$html$Html$Attributes$style, 'flex-direction', 'row'),
+						A2(elm$html$Html$Attributes$style, 'justify-content', 'left'),
+						A2(elm$html$Html$Attributes$style, 'text-align', 'center')
+					]),
 				_List_fromArray(
 					[
 						A2(
-						elm$html$Html$h2,
+						elm$html$Html$div,
 						_List_Nil,
 						_List_fromArray(
 							[
-								elm$html$Html$text('Expense')
+								A2(
+								elm$html$Html$h2,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text('Budget')
+									])),
+								A2(
+								elm$html$Html$img,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$src('images/budget.jpg'),
+										A2(elm$html$Html$Attributes$style, 'width', '100px'),
+										A2(elm$html$Html$Attributes$style, 'height', '100px')
+									]),
+								_List_Nil),
+								A2(
+								elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text(
+										elm$core$String$fromInt(model.budget))
+									]))
 							])),
 						A2(
 						elm$html$Html$div,
 						_List_Nil,
 						_List_fromArray(
 							[
-								elm$html$Html$text(
-								elm$core$String$fromInt(model.expense))
-							]))
-					])),
-				A2(
-				elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						A2(
-						elm$html$Html$h2,
-						_List_Nil,
-						_List_fromArray(
-							[
-								elm$html$Html$text('Balance')
+								A2(
+								elm$html$Html$h2,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text('Expense')
+									])),
+								A2(
+								elm$html$Html$img,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$src('images/expense.png'),
+										A2(elm$html$Html$Attributes$style, 'width', '100px'),
+										A2(elm$html$Html$Attributes$style, 'height', '100px')
+									]),
+								_List_Nil),
+								A2(
+								elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text(
+										elm$core$String$fromInt(model.expense))
+									]))
 							])),
 						A2(
 						elm$html$Html$div,
 						_List_Nil,
 						_List_fromArray(
 							[
-								elm$html$Html$text(
-								elm$core$String$fromInt(model.balance))
+								A2(
+								elm$html$Html$h2,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text('Balance')
+									])),
+								A2(
+								elm$html$Html$img,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$src('images/balance.svg'),
+										A2(elm$html$Html$Attributes$style, 'width', '100px'),
+										A2(elm$html$Html$Attributes$style, 'height', '100px')
+									]),
+								_List_Nil),
+								A2(
+								elm$html$Html$div,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text(
+										elm$core$String$fromInt(model.balance))
+									]))
 							]))
 					]))
 			]));

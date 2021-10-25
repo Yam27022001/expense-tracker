@@ -35,7 +35,7 @@ init =
 
 type Msg = Budget String
 
--- whenever we have to make 
+-- whenever we have to make a new variable we have to use let in  block 
 
 update : Msg -> Model -> Model
 update msg model =
@@ -60,24 +60,56 @@ view : Model -> Html Msg
 view model =
     div []
     [
-       h1 [] [text "Enter the Budget"]
-       , input [value (String.fromInt model.budget), onInput Budget] []
-       , button [] [text "Calculate"]
-       , div[] 
+       h1 [] [text "TRACK YOUR BUDGET"]
+       , div[ style "display" "flex"
+            , style "flex-direction" "column"
+            , style "border" "2px solid green"
+            , style "padding-left" "10px"
+            , style "padding-bottom" "10px"
+            , style "width" "400px" 
+            ] [
+           h2 [style "font-weight" "normal"
+               , style "font-size" "20px"][text "Please Enter Your Budget"] 
+           , input [value (String.fromInt model.budget), onInput Budget] []
+           , button [style "margin-top" "12px"
+                    , style "border" "2px solid green"
+                    , style "width" "100px"
+                    , style "color" "green"] [text "Calculate"]
+       ]
+       ,div [style "display" "flex"
+            , style "flex-direction" "row"
+            , style "justify-content" "left"
+            , style "text-align" "center"]
+        [
+            div[] 
             [
                 h2[] [text "Budget"]
+                , img[src "images/budget.jpg"
+                  , style "width" "100px"
+                  , style "height" "100px"
+                ][]
                 , div[] [text (String.fromInt model.budget)]
             ]
         , div[] 
             [
                 h2[] [text "Expense"]
+                , img [src "images/expense.png"  
+                    , style "width" "100px"
+                    , style "height" "100px"                              
+                    ][]
                 , div[] [text (String.fromInt model.expense)] 
             ]
         , div[] 
             [
                 h2[] [text "Balance"]
+                , img [src "images/balance.svg"
+                    , style "width" "100px"
+                    , style "height" "100px"
+                    ][] 
                 , div[] [text (String.fromInt model.balance)] 
             ]
+        ]
+       
     ]
     -- div []
     -- [ h1 [] [text "Enter the Budget"]
