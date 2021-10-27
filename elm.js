@@ -4355,7 +4355,7 @@ function _Browser_load(url)
 		}
 	}));
 }
-var author$project$Main$init = {balance: 0, budget: 0, expense: 0};
+var author$project$Main$init = {balance: 0, budget: 0, expense: 0, expenseAmount: 0, expenseItem: ''};
 var elm$core$Basics$EQ = {$: 'EQ'};
 var elm$core$Basics$GT = {$: 'GT'};
 var elm$core$Basics$LT = {$: 'LT'};
@@ -5176,7 +5176,13 @@ var author$project$Main$view = function (model) {
 							[
 								elm$html$Html$text('Please Enter Your Expense')
 							])),
-						A2(elm$html$Html$input, _List_Nil, _List_Nil),
+						A2(
+						elm$html$Html$input,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$value(model.expenseItem)
+							]),
+						_List_Nil),
 						A2(
 						elm$html$Html$h2,
 						_List_fromArray(
@@ -5188,7 +5194,14 @@ var author$project$Main$view = function (model) {
 							[
 								elm$html$Html$text('Please Enter Your Expense Amount')
 							])),
-						A2(elm$html$Html$input, _List_Nil, _List_Nil),
+						A2(
+						elm$html$Html$input,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$value(
+								elm$core$String$fromInt(model.expenseAmount))
+							]),
+						_List_Nil),
 						A2(
 						elm$html$Html$button,
 						_List_fromArray(

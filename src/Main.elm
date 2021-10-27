@@ -19,7 +19,14 @@ type alias Model =
   {  budget : Int
     ,expense : Int
     ,balance : Int
-  }
+    ,expenseItems : List ExpenseItem
+    }
+
+type alias ExpenseItem = 
+ {  
+     expenseItem : String
+     ,expenseAmount : Int
+ }
 
 
 init : Model
@@ -27,14 +34,17 @@ init =
     {
     budget = 0
     ,expense = 0
-    ,balance = 0}  
+    ,balance = 0
+    ,expenseItems = [
+        {expenseItem = "",expenseAmount = 0}
+    ]
+    }  
 
 
 --UPDATE
 
 
-type Msg = Budget String
-
+type Msg = Budget String | Add String
 -- whenever we have to make a new variable we have to use let in  block 
 
 update : Msg -> Model -> Model
@@ -49,7 +59,16 @@ update msg model =
             { model | budget = currentBudget 
                     , balance = (currentBudget - model.expense)
             }
-            
+        
+        Add  add -> 
+            {  model
+                | expenseItems= List.append model.expenseItems
+                    [{ expenseItem = expenseItem.expenseItem
+                     , expenseAmount = expenseItem.expenseAmount
+                     }
+                    ]
+            }
+
    
     
 
@@ -122,18 +141,19 @@ view model =
                 h2 [style "font-weight" "normal"
                    , style "font-size" "20px"
                 ] [text "Please Enter Your Expense"]
-                , input [] []
+                , input [value model.expenseItem ] []
                 , h2 [style "font-size" "20px"
                     , style "font-weight" "normal"
                 ] [text "Please Enter Your Expense Amount"]
-                , input [] []
-                , button [style "margin-top" "12px"
+                , input [value (String.fromInt model.expenseAmount)] []
+                , button [ onClick Add
+                    ,style "margin-top" "12px"
                     , style "border" "2px solid red"
                     , style "width" "100px"
                     , style "color" "red"
                 ][text "Add"]
-              
-        ]
+        , div [] [(List.map model.expenseItems)]
+             ]
        
     ]
     -- div []
