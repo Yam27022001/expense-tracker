@@ -19,6 +19,7 @@ type alias Model =
   {  budget : Int
     ,expense : Int
     ,balance : Int
+    ,tempExpenseItem : ExpenseItem
     ,expenseItems : List ExpenseItem
     }
 
@@ -35,16 +36,20 @@ init =
     budget = 0
     ,expense = 0
     ,balance = 0
-    ,expenseItems = [
-        {expenseItem = "",expenseAmount = 0}
-    ]
+    ,tempExpenseItem = ExpenseItem ""  0
+    ,expenseItems = []
     }  
 
 
 --UPDATE
 
 
-type Msg = Budget String | Add String
+type Msg = 
+    Budget String
+    | Add
+    | UpdateExpenseItem String
+    | UpdateExpenseAmount String
+    | Delete
 -- whenever we have to make a new variable we have to use let in  block 
 
 update : Msg -> Model -> Model
@@ -59,18 +64,59 @@ update msg model =
             { model | budget = currentBudget 
                     , balance = (currentBudget - model.expense)
             }
-        
-        Add  add -> 
-            {  model
-                | expenseItems= List.append model.expenseItems
-                    [{ expenseItem = expenseItem.expenseItem
-                     , expenseAmount = expenseItem.expenseAmount
-                     }
-                    ]
+
+        UpdateExpenseItem name -> 
+            -- { model | budget = (String.toInt budget)}
+             let 
+                currentexpenseItem = model.tempExpenseItem
+                updatedExpenseItem = {currentexpenseItem | expenseItem = name}
+                dummy = Debug.log "tuple" currentexpenseItem
+                dummy1 = Debug.log "tuple" name
+            in
+             
+            { model | tempExpenseItem = updatedExpenseItem
+                    
             }
 
-   
-    
+        UpdateExpenseAmount amount -> 
+            -- { model | budget = (String.toInt budget)}
+             let 
+                currentexpenseItem = model.tempExpenseItem
+                currentBudget = (Maybe.withDefault 0 (String.toInt amount))
+                updatedExpenseItem = {currentexpenseItem | expenseAmount = currentBudget}
+              
+            in
+             
+            { model | tempExpenseItem = updatedExpenseItem
+                    
+            }
+        Add   -> 
+            let
+                dummy = Debug.log "dump tuple" model.tempExpenseItem
+                -- budget = model.budget
+                -- expense = model.expense
+            
+            in 
+          
+            {  model
+                | expenseItems=  model.expenseItems ++ [ExpenseItem model.tempExpenseItem.expenseItem model.tempExpenseItem.expenseAmount]
+                , expense = model.tempExpenseItem.expenseAmount  
+        
+            }
+        Delete -> 
+            { model | expenseItems = model.expenseItems  }
+            -- { model | expenseItem = model.expenseItem}
+
+
+toTableRow : ExpenseItem -> Html Msg
+toTableRow expenseItem =
+    tr []
+        [ td [] [ text expenseItem.expenseItem ]
+        , td [] [ text (String.fromInt expenseItem.expenseAmount) ]
+        , td [] [
+            button [onClick Delete] [text "delete"]
+        ]
+        ]   
 
 -- VIEW
 
@@ -80,80 +126,52 @@ view model =
     div []
     [
        h1 [] [text "TRACK YOUR BUDGET"]
-       , div[ style "display" "flex"
-            , style "flex-direction" "column"
-            , style "border" "2px solid green"
-            , style "padding-left" "10px"
-            , style "padding-right" "10px"
-            , style "padding-bottom" "10px"
-            , style "width" "400px" 
-            ] [
-           h2 [style "font-weight" "normal"
-               , style "font-size" "20px"][text "Please Enter Your Budget"] 
+       , div[class "form1"] [
+           h2 [][text "Please Enter Your Budget"] 
            , input [value (String.fromInt model.budget), onInput Budget] []
-           , button [style "margin-top" "12px"
-                    , style "border" "2px solid green"
-                    , style "width" "100px"
-                    , style "color" "green"] [text "Calculate"]
-       ]
-       ,div [style "display" "flex"
-            , style "flex-direction" "row"
-            , style "justify-content" "left"
-            , style "text-align" "center"]
+        ]
+       ,div [ class "bug-exp-bal"]
         [
             div[] 
             [
                 h2[] [text "Budget"]
-                , img[src "images/budget.jpg"
-                  , style "width" "100px"
-                  , style "height" "100px"
-                ][]
+                , img[src "images/budget.jpg"][]
                 , div[] [text (String.fromInt model.budget)]
             ]
         , div[] 
             [
                 h2[] [text "Expense"]
-                , img [src "images/expense.png"  
-                    , style "width" "100px"
-                    , style "height" "100px"                              
-                    ][]
+                , img [src "images/expense.png"][]
                 , div[] [text (String.fromInt model.expense)] 
             ]
         , div[] 
             [
                 h2[] [text "Balance"]
-                , img [src "images/balance.svg"
-                    , style "width" "100px"
-                    , style "height" "100px"
-                    ][] 
+                , img [src "images/balance.svg"][] 
                 , div[] [text (String.fromInt model.balance)] 
             ]
         ]
-        , div [style "display" "flex"
-                , style "flex-direction" "column"
-                , style "border" "2px solid red"
-                , style "padding-left" "10px"
-                , style "padding-right" "10px"
-                , style "padding-bottom" "10px"
-                , style "width" "400px" 
-                , style "margin-top" "10px"
-            ][
-                h2 [style "font-weight" "normal"
-                   , style "font-size" "20px"
-                ] [text "Please Enter Your Expense"]
-                , input [value model.expenseItem ] []
-                , h2 [style "font-size" "20px"
-                    , style "font-weight" "normal"
-                ] [text "Please Enter Your Expense Amount"]
-                , input [value (String.fromInt model.expenseAmount)] []
-                , button [ onClick Add
-                    ,style "margin-top" "12px"
-                    , style "border" "2px solid red"
-                    , style "width" "100px"
-                    , style "color" "red"
-                ][text "Add"]
-        , div [] [(List.map model.expenseItems)]
+        , div [ class "form2"][
+                h2 [] [text "Please Enter Your Expense"]
+                , input [value model.tempExpenseItem.expenseItem , onInput UpdateExpenseItem] []  --modal or expenseItem
+                , h2 [] [text "Please Enter Your Expense Amount"]
+                , input [value  (String.fromInt model.tempExpenseItem.expenseAmount ), onInput UpdateExpenseAmount] []
+                  
+                , button [ onClick Add][text "Add"]
+        
              ]
+        , div [] [ 
+             table
+                []
+                ([ thead []
+                    [ th [] [ text "Expense" ]
+                    , th [] [ text "Amount" ]
+                    ]
+                ]
+                    ++ List.map toTableRow model.expenseItems  --tries to combine that Html msg with a List.
+                    
+                )
+        ]
        
     ]
     -- div []
