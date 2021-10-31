@@ -19,14 +19,17 @@ type alias Model =
   {  budget : Int
     ,expense : Int
     ,balance : Int
-    ,tempExpenseItem : ExpenseItem
+    ,tempExpenseItem : ExpenseItem 
+    ,index : Int
     ,expenseItems : List ExpenseItem
     }
 
 type alias ExpenseItem = 
  {  
-     expenseItem : String
+      index : Int
+     ,expenseItem : String
      ,expenseAmount : Int
+     
  }
 
 
@@ -36,7 +39,8 @@ init =
     budget = 0
     ,expense = 0
     ,balance = 0
-    ,tempExpenseItem = ExpenseItem ""  0
+    ,index = 0
+    ,tempExpenseItem = ExpenseItem 0 ""  0 
     ,expenseItems = []
     }  
 
@@ -49,7 +53,7 @@ type Msg =
     | Add
     | UpdateExpenseItem String
     | UpdateExpenseAmount String
-    | Delete
+    | Delete Int 
 -- whenever we have to make a new variable we have to use let in  block 
 
 update : Msg -> Model -> Model
@@ -86,35 +90,49 @@ update msg model =
                 updatedExpenseItem = {currentexpenseItem | expenseAmount = currentBudget}
               
             in
-             
-            { model | tempExpenseItem = updatedExpenseItem
-                    
-            }
+            { model | tempExpenseItem = updatedExpenseItem}
         Add   -> 
             let
                 dummy = Debug.log "dump tuple" model.tempExpenseItem
-                -- budget = model.budget
-                -- expense = model.expense
-            
+
+                updatedExpense = model.expense + model.tempExpenseItem.expenseAmount
+                currentIndex = model.index + 1
+                dummy1 = Debug.log "dump" currentIndex
+                updatedExpenseItems =  model.expenseItems ++ [ExpenseItem model.tempExpenseItem.index model.tempExpenseItem.expenseItem model.tempExpenseItem.expenseAmount]
+                updatedtempExpenseItem= ExpenseItem currentIndex "" 0
+                _ = Debug.log "dump" updatedExpenseItems
+
+
             in 
           
             {  model
-                | expenseItems=  model.expenseItems ++ [ExpenseItem model.tempExpenseItem.expenseItem model.tempExpenseItem.expenseAmount]
-                , expense = model.tempExpenseItem.expenseAmount  
-        
+                | index= model.index + 1
+                ,expenseItems = updatedExpenseItems
+                , expense =  updatedExpense
+                , balance = (model.budget - updatedExpense) 
+                ,tempExpenseItem = updatedtempExpenseItem
             }
-        Delete -> 
-            { model | expenseItems = model.expenseItems  }
-            -- { model | expenseItem = model.expenseItem}
+            
+
+        Delete index ->
+
+           {model 
+            |  expenseItems = List.filter (\expenseItem-> expenseItem.index /= index) model.expenseItems
+           }
+
+
+        
+            
 
 
 toTableRow : ExpenseItem -> Html Msg
 toTableRow expenseItem =
     tr []
-        [ td [] [ text expenseItem.expenseItem ]
+        [ td [] [ text (String.fromInt expenseItem.index)]
+        , td [] [ text expenseItem.expenseItem ]
         , td [] [ text (String.fromInt expenseItem.expenseAmount) ]
         , td [] [
-            button [onClick Delete] [text "delete"]
+            button [onClick (Delete expenseItem.index)] [text "delete"]
         ]
         ]   
 
@@ -129,6 +147,7 @@ view model =
        , div[class "form1"] [
            h2 [][text "Please Enter Your Budget"] 
            , input [value (String.fromInt model.budget), onInput Budget] []
+           
         ]
        ,div [ class "bug-exp-bal"]
         [
@@ -156,7 +175,7 @@ view model =
                 , input [value model.tempExpenseItem.expenseItem , onInput UpdateExpenseItem] []  --modal or expenseItem
                 , h2 [] [text "Please Enter Your Expense Amount"]
                 , input [value  (String.fromInt model.tempExpenseItem.expenseAmount ), onInput UpdateExpenseAmount] []
-                  
+                
                 , button [ onClick Add][text "Add"]
         
              ]
@@ -164,8 +183,10 @@ view model =
              table
                 []
                 ([ thead []
-                    [ th [] [ text "Expense" ]
+                    [ th [] [text "S.no"]
+                    , th [] [ text "Expense"]
                     , th [] [ text "Amount" ]
+                    
                     ]
                 ]
                     ++ List.map toTableRow model.expenseItems  --tries to combine that Html msg with a List.

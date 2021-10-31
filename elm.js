@@ -4355,9 +4355,9 @@ function _Browser_load(url)
 		}
 	}));
 }
-var author$project$Main$ExpenseItem = F2(
-	function (expenseItem, expenseAmount) {
-		return {expenseAmount: expenseAmount, expenseItem: expenseItem};
+var author$project$Main$ExpenseItem = F3(
+	function (index, expenseItem, expenseAmount) {
+		return {expenseAmount: expenseAmount, expenseItem: expenseItem, index: index};
 	});
 var elm$core$Basics$EQ = {$: 'EQ'};
 var elm$core$Basics$LT = {$: 'LT'};
@@ -4444,11 +4444,103 @@ var author$project$Main$init = {
 	budget: 0,
 	expense: 0,
 	expenseItems: _List_Nil,
-	tempExpenseItem: A2(author$project$Main$ExpenseItem, '', 0)
+	index: 0,
+	tempExpenseItem: A3(author$project$Main$ExpenseItem, 0, '', 0)
 };
+var elm$core$Basics$add = _Basics_add;
 var elm$core$Basics$append = _Utils_append;
+var elm$core$Basics$neq = _Utils_notEqual;
 var elm$core$Basics$sub = _Basics_sub;
 var elm$core$Debug$log = _Debug_log;
+var elm$core$Basics$gt = _Utils_gt;
+var elm$core$List$foldl = F3(
+	function (func, acc, list) {
+		foldl:
+		while (true) {
+			if (!list.b) {
+				return acc;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				var $temp$func = func,
+					$temp$acc = A2(func, x, acc),
+					$temp$list = xs;
+				func = $temp$func;
+				acc = $temp$acc;
+				list = $temp$list;
+				continue foldl;
+			}
+		}
+	});
+var elm$core$List$reverse = function (list) {
+	return A3(elm$core$List$foldl, elm$core$List$cons, _List_Nil, list);
+};
+var elm$core$List$foldrHelper = F4(
+	function (fn, acc, ctr, ls) {
+		if (!ls.b) {
+			return acc;
+		} else {
+			var a = ls.a;
+			var r1 = ls.b;
+			if (!r1.b) {
+				return A2(fn, a, acc);
+			} else {
+				var b = r1.a;
+				var r2 = r1.b;
+				if (!r2.b) {
+					return A2(
+						fn,
+						a,
+						A2(fn, b, acc));
+				} else {
+					var c = r2.a;
+					var r3 = r2.b;
+					if (!r3.b) {
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(fn, c, acc)));
+					} else {
+						var d = r3.a;
+						var r4 = r3.b;
+						var res = (ctr > 500) ? A3(
+							elm$core$List$foldl,
+							fn,
+							acc,
+							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(
+									fn,
+									c,
+									A2(fn, d, res))));
+					}
+				}
+			}
+		}
+	});
+var elm$core$List$foldr = F3(
+	function (fn, acc, ls) {
+		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
+	});
+var elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2(elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
 var elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
 		if (maybe.$ === 'Just') {
@@ -4500,22 +4592,33 @@ var author$project$Main$update = F2(
 					model,
 					{tempExpenseItem: updatedExpenseItem});
 			case 'Add':
-				var expense = model.expense;
+				var updatedExpenseItems = _Utils_ap(
+					model.expenseItems,
+					_List_fromArray(
+						[
+							A3(author$project$Main$ExpenseItem, model.tempExpenseItem.index, model.tempExpenseItem.expenseItem, model.tempExpenseItem.expenseAmount)
+						]));
+				var updatedExpense = model.expense + model.tempExpenseItem.expenseAmount;
 				var dummy = A2(elm$core$Debug$log, 'dump tuple', model.tempExpenseItem);
-				var budget = model.budget;
+				var currentIndex = model.index + 1;
+				var dummy1 = A2(elm$core$Debug$log, 'dump', currentIndex);
+				var updatedtempExpenseItem = A3(author$project$Main$ExpenseItem, currentIndex, '', 0);
+				var _n1 = A2(elm$core$Debug$log, 'dump', updatedExpenseItems);
+				return _Utils_update(
+					model,
+					{balance: model.budget - updatedExpense, expense: updatedExpense, expenseItems: updatedExpenseItems, index: model.index + 1, tempExpenseItem: updatedtempExpenseItem});
+			default:
+				var index = msg.a;
 				return _Utils_update(
 					model,
 					{
-						expense: model.tempExpenseItem.expenseAmount,
-						expenseItems: _Utils_ap(
-							model.expenseItems,
-							_List_fromArray(
-								[
-									A2(author$project$Main$ExpenseItem, model.tempExpenseItem.expenseItem, model.tempExpenseItem.expenseAmount)
-								]))
+						expenseItems: A2(
+							elm$core$List$filter,
+							function (expenseItem) {
+								return !_Utils_eq(expenseItem.index, index);
+							},
+							model.expenseItems)
 					});
-			default:
-				return model;
 		}
 	});
 var author$project$Main$Add = {$: 'Add'};
@@ -4528,7 +4631,9 @@ var author$project$Main$UpdateExpenseAmount = function (a) {
 var author$project$Main$UpdateExpenseItem = function (a) {
 	return {$: 'UpdateExpenseItem', a: a};
 };
-var author$project$Main$Delete = {$: 'Delete'};
+var author$project$Main$Delete = function (a) {
+	return {$: 'Delete', a: a};
+};
 var elm$core$String$fromInt = _String_fromNumber;
 var elm$core$Basics$identity = function (x) {
 	return x;
@@ -4565,28 +4670,6 @@ var elm$core$Array$SubTree = function (a) {
 	return {$: 'SubTree', a: a};
 };
 var elm$core$Elm$JsArray$initializeFromList = _JsArray_initializeFromList;
-var elm$core$List$foldl = F3(
-	function (func, acc, list) {
-		foldl:
-		while (true) {
-			if (!list.b) {
-				return acc;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				var $temp$func = func,
-					$temp$acc = A2(func, x, acc),
-					$temp$list = xs;
-				func = $temp$func;
-				acc = $temp$acc;
-				list = $temp$list;
-				continue foldl;
-			}
-		}
-	});
-var elm$core$List$reverse = function (list) {
-	return A3(elm$core$List$foldl, elm$core$List$cons, _List_Nil, list);
-};
 var elm$core$Array$compressNodes = F2(
 	function (nodes, acc) {
 		compressNodes:
@@ -4634,13 +4717,11 @@ var elm$core$Array$treeFromBuilder = F2(
 			}
 		}
 	});
-var elm$core$Basics$add = _Basics_add;
 var elm$core$Basics$apL = F2(
 	function (f, x) {
 		return f(x);
 	});
 var elm$core$Basics$floor = _Basics_floor;
-var elm$core$Basics$gt = _Utils_gt;
 var elm$core$Basics$max = F2(
 	function (x, y) {
 		return (_Utils_cmp(x, y) > 0) ? x : y;
@@ -4969,6 +5050,14 @@ var author$project$Main$toTableRow = function (expenseItem) {
 				_List_Nil,
 				_List_fromArray(
 					[
+						elm$html$Html$text(
+						elm$core$String$fromInt(expenseItem.index))
+					])),
+				A2(
+				elm$html$Html$td,
+				_List_Nil,
+				_List_fromArray(
+					[
 						elm$html$Html$text(expenseItem.expenseItem)
 					])),
 				A2(
@@ -4988,7 +5077,8 @@ var author$project$Main$toTableRow = function (expenseItem) {
 						elm$html$Html$button,
 						_List_fromArray(
 							[
-								elm$html$Html$Events$onClick(author$project$Main$Delete)
+								elm$html$Html$Events$onClick(
+								author$project$Main$Delete(expenseItem.index))
 							]),
 						_List_fromArray(
 							[
@@ -4997,61 +5087,6 @@ var author$project$Main$toTableRow = function (expenseItem) {
 					]))
 			]));
 };
-var elm$core$List$foldrHelper = F4(
-	function (fn, acc, ctr, ls) {
-		if (!ls.b) {
-			return acc;
-		} else {
-			var a = ls.a;
-			var r1 = ls.b;
-			if (!r1.b) {
-				return A2(fn, a, acc);
-			} else {
-				var b = r1.a;
-				var r2 = r1.b;
-				if (!r2.b) {
-					return A2(
-						fn,
-						a,
-						A2(fn, b, acc));
-				} else {
-					var c = r2.a;
-					var r3 = r2.b;
-					if (!r3.b) {
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(fn, c, acc)));
-					} else {
-						var d = r3.a;
-						var r4 = r3.b;
-						var res = (ctr > 500) ? A3(
-							elm$core$List$foldl,
-							fn,
-							acc,
-							elm$core$List$reverse(r4)) : A4(elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
-						return A2(
-							fn,
-							a,
-							A2(
-								fn,
-								b,
-								A2(
-									fn,
-									c,
-									A2(fn, d, res))));
-					}
-				}
-			}
-		}
-	});
-var elm$core$List$foldr = F3(
-	function (fn, acc, ls) {
-		return A4(elm$core$List$foldrHelper, fn, acc, 0, ls);
-	});
 var elm$core$List$map = F2(
 	function (f, xs) {
 		return A3(
@@ -5320,6 +5355,13 @@ var author$project$Main$view = function (model) {
 									_List_Nil,
 									_List_fromArray(
 										[
+											A2(
+											elm$html$Html$th,
+											_List_Nil,
+											_List_fromArray(
+												[
+													elm$html$Html$text('S.no')
+												])),
 											A2(
 											elm$html$Html$th,
 											_List_Nil,
