@@ -5098,7 +5098,7 @@ var author$project$Main$update = F2(
 							listTail));
 					return _Utils_update(
 						model,
-						{balance: model.balance + x.expenseAmount, expense: model.expense - x.expenseAmount, expenseItems: updatedExpenseItems});
+						{balance: model.balance, expense: model.expense, expenseItems: updatedExpenseItems});
 				} else {
 					return model;
 				}

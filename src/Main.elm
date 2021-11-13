@@ -211,8 +211,8 @@ update msg model =
                         in
                         {model 
                         |  expenseItems = updatedExpenseItems
-                        , expense = model.expense - x.expenseAmount
-                        , balance = model.balance + x.expenseAmount}
+                        , expense = model.expense
+                        , balance = model.balance }
 
 
                     Nothing ->
