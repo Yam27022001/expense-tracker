@@ -28,6 +28,7 @@ type alias ExpenseItem =
         index :Int
         ,expenseItem : String
         ,expenseAmount : Int
+        ,editable : Bool
 
     }
 
@@ -39,7 +40,7 @@ init =
         ,expense = 0
         ,balance = 0
         ,index = 0
-        ,tempExpenseItem = ExpenseItem 0 ""  0
+        ,tempExpenseItem = ExpenseItem 0 ""  0 False
         ,expenseItems = []
     }  
 
@@ -51,6 +52,8 @@ type Msg =
     | UpdateExpenseAmount String
     | Add
     | Delete Int
+    | Edit Int 
+    | CancelEdit Int
         
 
 
@@ -86,8 +89,8 @@ update msg model =
             let
                 updatedExpense = model.expense + model.tempExpenseItem.expenseAmount
                 currentIndex = model.index + 1
-                updatedExpenseItems =  model.expenseItems ++ [ExpenseItem model.tempExpenseItem.index model.tempExpenseItem.expenseItem model.tempExpenseItem.expenseAmount]
-                updatedtempExpenseItem= ExpenseItem currentIndex "" 0
+                updatedExpenseItems =  model.expenseItems ++ [ExpenseItem model.tempExpenseItem.index model.tempExpenseItem.expenseItem model.tempExpenseItem.expenseAmount True]
+                updatedtempExpenseItem= ExpenseItem currentIndex "" 0 False
             in
             {  model
                 | index= model.index + 1
@@ -116,15 +119,77 @@ update msg model =
                         { model 
                         |  expenseItems = updatedExpenseItems1 }
 
+        Edit index ->
+            let
+                updatedExpenseItems2 = List.filter (\expenseItem-> expenseItem.index == index) model.expenseItems
+                listHead = List.take index model.expenseItems
+                listTail = List.drop (index + 1) model.expenseItems
+            in
+                case (List.head updatedExpenseItems2) of
+                    Just x ->
+                        let
+                            expenseItem = ExpenseItem x.index x.expenseItem x.expenseAmount True
+                            updatedExpenseItems = listHead ++ [expenseItem] ++ listTail
+                        in
+                        {model 
+                        |  expenseItems = updatedExpenseItems
+                        , expense = model.expense
+                        , balance = model.balance}
+
+
+                    Nothing ->
+                        model
+
+        CancelEdit index ->
+            let
+                updatedExpenseItems2 = List.filter (\expenseItem-> expenseItem.index == index) model.expenseItems
+                listHead = List.take index model.expenseItems
+                listTail = List.drop (index + 1) model.expenseItems
+            in
+                case (List.head updatedExpenseItems2) of
+                    Just x ->
+                        let
+                            expenseItem = ExpenseItem x.index x.expenseItem x.expenseAmount False
+                            updatedExpenseItems = listHead ++ [expenseItem] ++ listTail
+                        in
+                        {model 
+                        |  expenseItems = updatedExpenseItems
+                        , expense = model.expense
+                        , balance = model.balance}
+
+
+                    Nothing ->
+                        model               
 
 toTableRow : ExpenseItem -> Html Msg
 toTableRow expenseItem =
+    if expenseItem.editable == True then
+        toTableRowEdit expenseItem
+    else 
+        toTableRowNonEdit expenseItem 
+
+toTableRowEdit : ExpenseItem -> Html Msg
+toTableRowEdit expenseItem =
+    tr []
+        [ td [] [ text (String.fromInt expenseItem.index)]
+        , td [] [ text expenseItem.expenseItem ]
+        , td [] [ text (String.fromInt expenseItem.expenseAmount) ]
+        , td [] [
+            input[type_ "text", value (String.fromInt expenseItem.expenseAmount) ] []
+            ,button [onClick (CancelEdit expenseItem.index)] [text "Cancel"]
+            , button [] [text "Submit"]
+        ]
+        ]   
+
+toTableRowNonEdit : ExpenseItem -> Html Msg
+toTableRowNonEdit expenseItem =
     tr []
         [ td [] [ text (String.fromInt expenseItem.index)]
         , td [] [ text expenseItem.expenseItem ]
         , td [] [ text (String.fromInt expenseItem.expenseAmount)]
         , td [] [
             button [onClick (Delete expenseItem.index)] [text "delete"]
+            , button [onClick (Edit expenseItem.index)] [text "edit"]
         ]
         ]   
 

@@ -4355,10 +4355,11 @@ function _Browser_load(url)
 		}
 	}));
 }
-var author$project$Main$ExpenseItem = F3(
-	function (index, expenseItem, expenseAmount) {
-		return {expenseAmount: expenseAmount, expenseItem: expenseItem, index: index};
+var author$project$Main$ExpenseItem = F4(
+	function (index, expenseItem, expenseAmount, editable) {
+		return {editable: editable, expenseAmount: expenseAmount, expenseItem: expenseItem, index: index};
 	});
+var elm$core$Basics$False = {$: 'False'};
 var elm$core$Basics$EQ = {$: 'EQ'};
 var elm$core$Basics$LT = {$: 'LT'};
 var elm$core$Elm$JsArray$foldr = _JsArray_foldr;
@@ -4445,13 +4446,36 @@ var author$project$Main$init = {
 	expense: 0,
 	expenseItems: _List_Nil,
 	index: 0,
-	tempExpenseItem: A3(author$project$Main$ExpenseItem, 0, '', 0)
+	tempExpenseItem: A4(author$project$Main$ExpenseItem, 0, '', 0, false)
 };
+var elm$core$Basics$True = {$: 'True'};
 var elm$core$Basics$add = _Basics_add;
 var elm$core$Basics$append = _Utils_append;
 var elm$core$Basics$eq = _Utils_equal;
 var elm$core$Basics$neq = _Utils_notEqual;
 var elm$core$Basics$sub = _Basics_sub;
+var elm$core$Basics$le = _Utils_le;
+var elm$core$List$drop = F2(
+	function (n, list) {
+		drop:
+		while (true) {
+			if (n <= 0) {
+				return list;
+			} else {
+				if (!list.b) {
+					return list;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs;
+					n = $temp$n;
+					list = $temp$list;
+					continue drop;
+				}
+			}
+		}
+	});
 var elm$core$Basics$gt = _Utils_gt;
 var elm$core$List$foldl = F3(
 	function (func, acc, list) {
@@ -4554,6 +4578,132 @@ var elm$core$List$head = function (list) {
 		return elm$core$Maybe$Nothing;
 	}
 };
+var elm$core$List$takeReverse = F3(
+	function (n, list, kept) {
+		takeReverse:
+		while (true) {
+			if (n <= 0) {
+				return kept;
+			} else {
+				if (!list.b) {
+					return kept;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs,
+						$temp$kept = A2(elm$core$List$cons, x, kept);
+					n = $temp$n;
+					list = $temp$list;
+					kept = $temp$kept;
+					continue takeReverse;
+				}
+			}
+		}
+	});
+var elm$core$List$takeTailRec = F2(
+	function (n, list) {
+		return elm$core$List$reverse(
+			A3(elm$core$List$takeReverse, n, list, _List_Nil));
+	});
+var elm$core$List$takeFast = F3(
+	function (ctr, n, list) {
+		if (n <= 0) {
+			return _List_Nil;
+		} else {
+			var _n0 = _Utils_Tuple2(n, list);
+			_n0$1:
+			while (true) {
+				_n0$5:
+				while (true) {
+					if (!_n0.b.b) {
+						return list;
+					} else {
+						if (_n0.b.b.b) {
+							switch (_n0.a) {
+								case 1:
+									break _n0$1;
+								case 2:
+									var _n2 = _n0.b;
+									var x = _n2.a;
+									var _n3 = _n2.b;
+									var y = _n3.a;
+									return _List_fromArray(
+										[x, y]);
+								case 3:
+									if (_n0.b.b.b.b) {
+										var _n4 = _n0.b;
+										var x = _n4.a;
+										var _n5 = _n4.b;
+										var y = _n5.a;
+										var _n6 = _n5.b;
+										var z = _n6.a;
+										return _List_fromArray(
+											[x, y, z]);
+									} else {
+										break _n0$5;
+									}
+								default:
+									if (_n0.b.b.b.b && _n0.b.b.b.b.b) {
+										var _n7 = _n0.b;
+										var x = _n7.a;
+										var _n8 = _n7.b;
+										var y = _n8.a;
+										var _n9 = _n8.b;
+										var z = _n9.a;
+										var _n10 = _n9.b;
+										var w = _n10.a;
+										var tl = _n10.b;
+										return (ctr > 1000) ? A2(
+											elm$core$List$cons,
+											x,
+											A2(
+												elm$core$List$cons,
+												y,
+												A2(
+													elm$core$List$cons,
+													z,
+													A2(
+														elm$core$List$cons,
+														w,
+														A2(elm$core$List$takeTailRec, n - 4, tl))))) : A2(
+											elm$core$List$cons,
+											x,
+											A2(
+												elm$core$List$cons,
+												y,
+												A2(
+													elm$core$List$cons,
+													z,
+													A2(
+														elm$core$List$cons,
+														w,
+														A3(elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
+									} else {
+										break _n0$5;
+									}
+							}
+						} else {
+							if (_n0.a === 1) {
+								break _n0$1;
+							} else {
+								break _n0$5;
+							}
+						}
+					}
+				}
+				return list;
+			}
+			var _n1 = _n0.b;
+			var x = _n1.a;
+			return _List_fromArray(
+				[x]);
+		}
+	});
+var elm$core$List$take = F2(
+	function (n, list) {
+		return A3(elm$core$List$takeFast, 0, n, list);
+	});
 var elm$core$Maybe$withDefault = F2(
 	function (_default, maybe) {
 		if (maybe.$ === 'Just') {
@@ -4603,15 +4753,15 @@ var author$project$Main$update = F2(
 					model.expenseItems,
 					_List_fromArray(
 						[
-							A3(author$project$Main$ExpenseItem, model.tempExpenseItem.index, model.tempExpenseItem.expenseItem, model.tempExpenseItem.expenseAmount)
+							A4(author$project$Main$ExpenseItem, model.tempExpenseItem.index, model.tempExpenseItem.expenseItem, model.tempExpenseItem.expenseAmount, true)
 						]));
 				var updatedExpense = model.expense + model.tempExpenseItem.expenseAmount;
 				var currentIndex = model.index + 1;
-				var updatedtempExpenseItem = A3(author$project$Main$ExpenseItem, currentIndex, '', 0);
+				var updatedtempExpenseItem = A4(author$project$Main$ExpenseItem, currentIndex, '', 0, false);
 				return _Utils_update(
 					model,
 					{balance: model.budget - updatedExpense, expense: updatedExpense, expenseItems: updatedExpenseItems, index: model.index + 1, tempExpenseItem: updatedtempExpenseItem});
-			default:
+			case 'Delete':
 				var index = msg.a;
 				var updatedExpenseItems2 = A2(
 					elm$core$List$filter,
@@ -4637,6 +4787,58 @@ var author$project$Main$update = F2(
 						model,
 						{expenseItems: updatedExpenseItems1});
 				}
+			case 'Edit':
+				var index = msg.a;
+				var updatedExpenseItems2 = A2(
+					elm$core$List$filter,
+					function (expenseItem) {
+						return _Utils_eq(expenseItem.index, index);
+					},
+					model.expenseItems);
+				var listTail = A2(elm$core$List$drop, index + 1, model.expenseItems);
+				var listHead = A2(elm$core$List$take, index, model.expenseItems);
+				var _n2 = elm$core$List$head(updatedExpenseItems2);
+				if (_n2.$ === 'Just') {
+					var x = _n2.a;
+					var expenseItem = A4(author$project$Main$ExpenseItem, x.index, x.expenseItem, x.expenseAmount, true);
+					var updatedExpenseItems = _Utils_ap(
+						listHead,
+						_Utils_ap(
+							_List_fromArray(
+								[expenseItem]),
+							listTail));
+					return _Utils_update(
+						model,
+						{balance: model.balance, expense: model.expense, expenseItems: updatedExpenseItems});
+				} else {
+					return model;
+				}
+			default:
+				var index = msg.a;
+				var updatedExpenseItems2 = A2(
+					elm$core$List$filter,
+					function (expenseItem) {
+						return _Utils_eq(expenseItem.index, index);
+					},
+					model.expenseItems);
+				var listTail = A2(elm$core$List$drop, index + 1, model.expenseItems);
+				var listHead = A2(elm$core$List$take, index, model.expenseItems);
+				var _n3 = elm$core$List$head(updatedExpenseItems2);
+				if (_n3.$ === 'Just') {
+					var x = _n3.a;
+					var expenseItem = A4(author$project$Main$ExpenseItem, x.index, x.expenseItem, x.expenseAmount, false);
+					var updatedExpenseItems = _Utils_ap(
+						listHead,
+						_Utils_ap(
+							_List_fromArray(
+								[expenseItem]),
+							listTail));
+					return _Utils_update(
+						model,
+						{balance: model.balance, expense: model.expense, expenseItems: updatedExpenseItems});
+				} else {
+					return model;
+				}
 		}
 	});
 var author$project$Main$Add = {$: 'Add'};
@@ -4649,15 +4851,13 @@ var author$project$Main$UpdateExpenseAmount = function (a) {
 var author$project$Main$UpdateExpenseItem = function (a) {
 	return {$: 'UpdateExpenseItem', a: a};
 };
-var author$project$Main$Delete = function (a) {
-	return {$: 'Delete', a: a};
+var author$project$Main$CancelEdit = function (a) {
+	return {$: 'CancelEdit', a: a};
 };
 var elm$core$String$fromInt = _String_fromNumber;
 var elm$core$Basics$identity = function (x) {
 	return x;
 };
-var elm$core$Basics$False = {$: 'False'};
-var elm$core$Basics$True = {$: 'True'};
 var elm$core$Result$isOk = function (result) {
 	if (result.$ === 'Ok') {
 		return true;
@@ -4797,7 +4997,6 @@ var elm$core$Array$initializeHelp = F5(
 			}
 		}
 	});
-var elm$core$Basics$le = _Utils_le;
 var elm$core$Basics$remainderBy = _Basics_remainderBy;
 var elm$core$Array$initialize = F2(
 	function (len, fn) {
@@ -5035,10 +5234,21 @@ var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 	}
 };
 var elm$html$Html$button = _VirtualDom_node('button');
+var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$td = _VirtualDom_node('td');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
 var elm$html$Html$tr = _VirtualDom_node('tr');
+var elm$json$Json$Encode$string = _Json_wrap;
+var elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			elm$json$Json$Encode$string(string));
+	});
+var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
+var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
 var elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -5056,7 +5266,77 @@ var elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		elm$json$Json$Decode$succeed(msg));
 };
-var author$project$Main$toTableRow = function (expenseItem) {
+var author$project$Main$toTableRowEdit = function (expenseItem) {
+	return A2(
+		elm$html$Html$tr,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$td,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text(
+						elm$core$String$fromInt(expenseItem.index))
+					])),
+				A2(
+				elm$html$Html$td,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text(expenseItem.expenseItem)
+					])),
+				A2(
+				elm$html$Html$td,
+				_List_Nil,
+				_List_fromArray(
+					[
+						elm$html$Html$text(
+						elm$core$String$fromInt(expenseItem.expenseAmount))
+					])),
+				A2(
+				elm$html$Html$td,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$input,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$type_('text'),
+								elm$html$Html$Attributes$value(
+								elm$core$String$fromInt(expenseItem.expenseAmount))
+							]),
+						_List_Nil),
+						A2(
+						elm$html$Html$button,
+						_List_fromArray(
+							[
+								elm$html$Html$Events$onClick(
+								author$project$Main$CancelEdit(expenseItem.index))
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('Cancel')
+							])),
+						A2(
+						elm$html$Html$button,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('Submit')
+							]))
+					]))
+			]));
+};
+var author$project$Main$Delete = function (a) {
+	return {$: 'Delete', a: a};
+};
+var author$project$Main$Edit = function (a) {
+	return {$: 'Edit', a: a};
+};
+var author$project$Main$toTableRowNonEdit = function (expenseItem) {
 	return A2(
 		elm$html$Html$tr,
 		_List_Nil,
@@ -5100,9 +5380,23 @@ var author$project$Main$toTableRow = function (expenseItem) {
 						_List_fromArray(
 							[
 								elm$html$Html$text('delete')
+							])),
+						A2(
+						elm$html$Html$button,
+						_List_fromArray(
+							[
+								elm$html$Html$Events$onClick(
+								author$project$Main$Edit(expenseItem.index))
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('edit')
 							]))
 					]))
 			]));
+};
+var author$project$Main$toTableRow = function (expenseItem) {
+	return expenseItem.editable ? author$project$Main$toTableRowEdit(expenseItem) : author$project$Main$toTableRowNonEdit(expenseItem);
 };
 var elm$core$List$map = F2(
 	function (f, xs) {
@@ -5122,18 +5416,9 @@ var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$h1 = _VirtualDom_node('h1');
 var elm$html$Html$h2 = _VirtualDom_node('h2');
 var elm$html$Html$img = _VirtualDom_node('img');
-var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$table = _VirtualDom_node('table');
 var elm$html$Html$th = _VirtualDom_node('th');
 var elm$html$Html$thead = _VirtualDom_node('thead');
-var elm$json$Json$Encode$string = _Json_wrap;
-var elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			elm$json$Json$Encode$string(string));
-	});
 var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
 var elm$html$Html$Attributes$src = function (url) {
 	return A2(
@@ -5141,7 +5426,6 @@ var elm$html$Html$Attributes$src = function (url) {
 		'src',
 		_VirtualDom_noJavaScriptOrHtmlUri(url));
 };
-var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
 var elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
 };
