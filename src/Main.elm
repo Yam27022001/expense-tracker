@@ -18,14 +18,17 @@ type alias Model =
         budget : Int
         ,expense : Int
         ,balance : Int
+        ,index : Int
         ,tempExpenseItem : ExpenseItem
         ,expenseItems : List ExpenseItem
     }
 
 type alias ExpenseItem = 
-    {  
-        expenseItem : String
+    {   
+        index :Int
+        ,expenseItem : String
         ,expenseAmount : Int
+
     }
 
 
@@ -35,7 +38,8 @@ init =
        budget = 0
         ,expense = 0
         ,balance = 0
-        ,tempExpenseItem = ExpenseItem ""  0
+        ,index = 0
+        ,tempExpenseItem = ExpenseItem 0 ""  0
         ,expenseItems = []
     }  
 
@@ -46,6 +50,7 @@ type Msg =
     | UpdateExpenseItem String
     | UpdateExpenseAmount String
     | Add
+    | Delete Int
         
 
 
@@ -76,17 +81,51 @@ update msg model =
             in
             { model | tempExpenseItem = updatedExpenseItem }
 
-        Add  ->
+       
+        Add   -> 
+            let
+                updatedExpense = model.expense + model.tempExpenseItem.expenseAmount
+                currentIndex = model.index + 1
+                updatedExpenseItems =  model.expenseItems ++ [ExpenseItem model.tempExpenseItem.index model.tempExpenseItem.expenseItem model.tempExpenseItem.expenseAmount]
+                updatedtempExpenseItem= ExpenseItem currentIndex "" 0
+            in
             {  model
-                | expenseItems=  model.expenseItems ++ [ExpenseItem model.tempExpenseItem.expenseItem model.tempExpenseItem.expenseAmount]
-                , expense = model.tempExpenseItem.expenseAmount
+                | index= model.index + 1
+                ,expenseItems = updatedExpenseItems
+                , expense =  updatedExpense
+                , balance = (model.budget - updatedExpense) 
+                ,tempExpenseItem = updatedtempExpenseItem
             }
+        
+        Delete index ->
+            let 
+                updatedExpenseItems1 = List.filter (\expenseItem-> expenseItem.index /= index) model.expenseItems
+                updatedExpenseItems2 = List.filter (\expenseItem-> expenseItem.index == index) model.expenseItems
+            in
+
+                case (List.head updatedExpenseItems2) of
+                    Just x ->
+                        let
+                            z = model.expense - x.expenseAmount
+                        in
+                        {model 
+                        |  expenseItems = updatedExpenseItems1 
+                        , expense = z
+                        , balance = model.budget - z}
+                    Nothing ->
+                        { model 
+                        |  expenseItems = updatedExpenseItems1 }
+
 
 toTableRow : ExpenseItem -> Html Msg
 toTableRow expenseItem =
     tr []
-        [ td [] [ text expenseItem.expenseItem ]
+        [ td [] [ text (String.fromInt expenseItem.index)]
+        , td [] [ text expenseItem.expenseItem ]
         , td [] [ text (String.fromInt expenseItem.expenseAmount)]
+        , td [] [
+            button [onClick (Delete expenseItem.index)] [text "delete"]
+        ]
         ]   
 
 --VIEW
@@ -133,7 +172,8 @@ view model =
              table
                 []
                 ( [ thead []
-                    [ th [] [ text "Expense" ]
+                    [ th [] [text "S.no"]
+                    , th [] [ text "Expense" ]
                     , th [] [ text "Amount" ]
                     ]
                   ]
