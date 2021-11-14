@@ -4813,7 +4813,7 @@ var author$project$Main$update = F2(
 				} else {
 					return model;
 				}
-			default:
+			case 'CancelEdit':
 				var index = msg.a;
 				var updatedExpenseItems2 = A2(
 					elm$core$List$filter,
@@ -4827,6 +4827,37 @@ var author$project$Main$update = F2(
 				if (_n3.$ === 'Just') {
 					var x = _n3.a;
 					var expenseItem = A4(author$project$Main$ExpenseItem, x.index, x.expenseItem, x.expenseAmount, false);
+					var updatedExpenseItems = _Utils_ap(
+						listHead,
+						_Utils_ap(
+							_List_fromArray(
+								[expenseItem]),
+							listTail));
+					return _Utils_update(
+						model,
+						{balance: model.balance, expense: model.expense, expenseItems: updatedExpenseItems});
+				} else {
+					return model;
+				}
+			default:
+				var index = msg.a;
+				var value = msg.b;
+				var updatedExpenseItems3 = A2(
+					elm$core$List$filter,
+					function (expenseItem) {
+						return _Utils_eq(expenseItem.index, index);
+					},
+					model.expenseItems);
+				var listTail = A2(elm$core$List$drop, index + 1, model.expenseItems);
+				var listHead = A2(elm$core$List$take, index, model.expenseItems);
+				var currentBudget = A2(
+					elm$core$Maybe$withDefault,
+					0,
+					elm$core$String$toInt(value));
+				var _n4 = elm$core$List$head(updatedExpenseItems3);
+				if (_n4.$ === 'Just') {
+					var x = _n4.a;
+					var expenseItem = A4(author$project$Main$ExpenseItem, x.index, x.expenseItem, currentBudget, x.editable);
 					var updatedExpenseItems = _Utils_ap(
 						listHead,
 						_Utils_ap(
@@ -4854,6 +4885,10 @@ var author$project$Main$UpdateExpenseItem = function (a) {
 var author$project$Main$CancelEdit = function (a) {
 	return {$: 'CancelEdit', a: a};
 };
+var author$project$Main$UpdateAmount = F2(
+	function (a, b) {
+		return {$: 'UpdateAmount', a: a, b: b};
+	});
 var elm$core$String$fromInt = _String_fromNumber;
 var elm$core$Basics$identity = function (x) {
 	return x;
@@ -5266,6 +5301,39 @@ var elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		elm$json$Json$Decode$succeed(msg));
 };
+var elm$html$Html$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 'MayStopPropagation', a: a};
+};
+var elm$html$Html$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			elm$virtual_dom$VirtualDom$on,
+			event,
+			elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var elm$json$Json$Decode$field = _Json_decodeField;
+var elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
+	});
+var elm$json$Json$Decode$string = _Json_decodeString;
+var elm$html$Html$Events$targetValue = A2(
+	elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	elm$json$Json$Decode$string);
+var elm$html$Html$Events$onInput = function (tagger) {
+	return A2(
+		elm$html$Html$Events$stopPropagationOn,
+		'input',
+		A2(
+			elm$json$Json$Decode$map,
+			elm$html$Html$Events$alwaysStop,
+			A2(elm$json$Json$Decode$map, tagger, elm$html$Html$Events$targetValue)));
+};
 var author$project$Main$toTableRowEdit = function (expenseItem) {
 	return A2(
 		elm$html$Html$tr,
@@ -5306,7 +5374,9 @@ var author$project$Main$toTableRowEdit = function (expenseItem) {
 							[
 								elm$html$Html$Attributes$type_('text'),
 								elm$html$Html$Attributes$value(
-								elm$core$String$fromInt(expenseItem.expenseAmount))
+								elm$core$String$fromInt(expenseItem.expenseAmount)),
+								elm$html$Html$Events$onInput(
+								author$project$Main$UpdateAmount(expenseItem.index))
 							]),
 						_List_Nil),
 						A2(
@@ -5425,39 +5495,6 @@ var elm$html$Html$Attributes$src = function (url) {
 		elm$html$Html$Attributes$stringProperty,
 		'src',
 		_VirtualDom_noJavaScriptOrHtmlUri(url));
-};
-var elm$html$Html$Events$alwaysStop = function (x) {
-	return _Utils_Tuple2(x, true);
-};
-var elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 'MayStopPropagation', a: a};
-};
-var elm$html$Html$Events$stopPropagationOn = F2(
-	function (event, decoder) {
-		return A2(
-			elm$virtual_dom$VirtualDom$on,
-			event,
-			elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var elm$json$Json$Decode$field = _Json_decodeField;
-var elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
-	});
-var elm$json$Json$Decode$string = _Json_decodeString;
-var elm$html$Html$Events$targetValue = A2(
-	elm$json$Json$Decode$at,
-	_List_fromArray(
-		['target', 'value']),
-	elm$json$Json$Decode$string);
-var elm$html$Html$Events$onInput = function (tagger) {
-	return A2(
-		elm$html$Html$Events$stopPropagationOn,
-		'input',
-		A2(
-			elm$json$Json$Decode$map,
-			elm$html$Html$Events$alwaysStop,
-			A2(elm$json$Json$Decode$map, tagger, elm$html$Html$Events$targetValue)));
 };
 var author$project$Main$view = function (model) {
 	return A2(

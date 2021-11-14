@@ -54,6 +54,7 @@ type Msg =
     | Delete Int
     | Edit Int 
     | CancelEdit Int
+    | UpdateAmount Int String
         
 
 
@@ -159,7 +160,29 @@ update msg model =
 
 
                     Nothing ->
-                        model               
+                        model   
+
+        UpdateAmount index value ->
+            let
+                updatedExpenseItems3 = List.filter (\expenseItem-> expenseItem.index == index) model.expenseItems
+                listHead = List.take index model.expenseItems
+                listTail = List.drop (index + 1) model.expenseItems
+                currentBudget = (Maybe.withDefault 0 (String.toInt value))
+            in
+                case (List.head updatedExpenseItems3) of
+                    Just x ->
+                        let
+                            expenseItem = ExpenseItem x.index x.expenseItem currentBudget x.editable
+                            updatedExpenseItems = listHead ++ [expenseItem] ++ listTail
+                        in
+                        {model 
+                        |  expenseItems = updatedExpenseItems
+                        , expense = model.expense
+                        , balance = model.balance }
+
+
+                    Nothing ->
+                        model             
 
 toTableRow : ExpenseItem -> Html Msg
 toTableRow expenseItem =
@@ -175,7 +198,7 @@ toTableRowEdit expenseItem =
         , td [] [ text expenseItem.expenseItem ]
         , td [] [ text (String.fromInt expenseItem.expenseAmount) ]
         , td [] [
-            input[type_ "text", value (String.fromInt expenseItem.expenseAmount) ] []
+            input[type_ "text", value (String.fromInt expenseItem.expenseAmount) , onInput (UpdateAmount expenseItem.index) ] []
             ,button [onClick (CancelEdit expenseItem.index)] [text "Cancel"]
             , button [] [text "Submit"]
         ]
