@@ -4,11 +4,17 @@ import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Json.Decode exposing (Decoder,field,map3,string,int)
+import Http
+
+
+
+
 
 -- MAIN
-
+main:Program () Model Msg
 main =
-  Browser.sandbox { init = init, update = update, view = view }
+  Browser.element { init = init, update = update, view = view , subscriptions = \_ -> Sub.none}
 
 
 -- MODEL
@@ -21,6 +27,7 @@ type alias Model =
         ,index : Int
         ,tempExpenseItem : ExpenseItem
         ,expenseItems : List ExpenseItem
+        -- ,errorMessage : Maybe String
     }
 
 type alias ExpenseItem = 
@@ -28,21 +35,24 @@ type alias ExpenseItem =
         index :Int
         ,expenseItem : String
         ,expenseAmount : Int
-        ,editable : Bool
+        -- ,editable : Bool
+        }
 
-    }
 
-
-init : Model
-init = 
-    {
+init : () -> ( Model, Cmd Msg )
+init _ = 
+    ({
        budget = 0
         ,expense = 0
         ,balance = 0
         ,index = 0
-        ,tempExpenseItem = ExpenseItem 0 ""  0 False
+        ,tempExpenseItem = ExpenseItem 0 ""  0 
         ,expenseItems = []
+    --     , errorMessage = Nothing
     }  
+      ,Cmd.none
+            )
+        
 
 
 --UPDATE
@@ -54,11 +64,14 @@ type Msg =
     | Delete Int
     | Edit Int 
     | CancelEdit Int
-    | UpdateAmount Int String
+    | SendHttpRequest
+    | DataReceived (Result Http.Error (List ExpenseItem))
+    -- | UpdateAmount Int String
+    
         
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
 
     case msg of 
@@ -66,16 +79,19 @@ update msg model =
             let 
                 currentBudget = (Maybe.withDefault 0 (String.toInt budget))
             in
-            { model | budget = currentBudget 
+            ({ model | budget = currentBudget 
                 , balance = (currentBudget - model.expense)
             }
+            ,Cmd.none
+            )
         
         UpdateExpenseItem name -> 
             let 
                 currentexpenseItem = model.tempExpenseItem
                 updatedExpenseItem = {currentexpenseItem | expenseItem = name}
             in
-            { model | tempExpenseItem = updatedExpenseItem }
+            ({ model | tempExpenseItem = updatedExpenseItem } ,Cmd.none)
+            
 
         UpdateExpenseAmount amount -> 
             let 
@@ -83,23 +99,25 @@ update msg model =
                 currentBudget = (Maybe.withDefault 0 (String.toInt amount))
                 updatedExpenseItem = {currentexpenseItem | expenseAmount = currentBudget}
             in
-            { model | tempExpenseItem = updatedExpenseItem }
+            ({ model | tempExpenseItem = updatedExpenseItem } ,Cmd.none
+            )
 
        
         Add   -> 
             let
                 updatedExpense = model.expense + model.tempExpenseItem.expenseAmount
                 currentIndex = model.index + 1
-                updatedExpenseItems =  model.expenseItems ++ [ExpenseItem model.tempExpenseItem.index model.tempExpenseItem.expenseItem model.tempExpenseItem.expenseAmount True]
-                updatedtempExpenseItem= ExpenseItem currentIndex "" 0 False
+                -- updatedExpenseItems =  model.expenseItems ++ [ExpenseItem model.tempExpenseItem.index model.tempExpenseItem.expenseItem model.tempExpenseItem.expenseAmount ]
+                updatedtempExpenseItem= ExpenseItem currentIndex "" 0 
             in
-            {  model
+            ({  model
                 | index= model.index + 1
                 ,expenseItems = updatedExpenseItems
                 , expense =  updatedExpense
                 , balance = (model.budget - updatedExpense) 
                 ,tempExpenseItem = updatedtempExpenseItem
-            }
+            } ,Cmd.none
+            )
         
         Delete index ->
             let 
@@ -112,13 +130,15 @@ update msg model =
                         let
                             z = model.expense - x.expenseAmount
                         in
-                        {model 
+                        ({model 
                         |  expenseItems = updatedExpenseItems1 
                         , expense = z
-                        , balance = model.budget - z}
+                        , balance = model.budget - z} ,Cmd.none
+                        )
                     Nothing ->
-                        { model 
-                        |  expenseItems = updatedExpenseItems1 }
+                        ({ model 
+                        |  expenseItems = updatedExpenseItems1 } ,Cmd.none
+                        )
 
         Edit index ->
             let
@@ -129,17 +149,19 @@ update msg model =
                 case (List.head updatedExpenseItems2) of
                     Just x ->
                         let
-                            expenseItem = ExpenseItem x.index x.expenseItem x.expenseAmount True
+                            expenseItem = ExpenseItem x.index x.expenseItem x.expenseAmount 
                             updatedExpenseItems = listHead ++ [expenseItem] ++ listTail
                         in
-                        {model 
+                        ({model 
                         |  expenseItems = updatedExpenseItems
                         , expense = model.expense
-                        , balance = model.balance}
+                        , balance = model.balance} ,Cmd.none
+                        )
 
 
                     Nothing ->
-                        model
+                        (model ,Cmd.none
+                         )
 
         CancelEdit index ->
             let
@@ -150,46 +172,86 @@ update msg model =
                 case (List.head updatedExpenseItems2) of
                     Just x ->
                         let
-                            expenseItem = ExpenseItem x.index x.expenseItem x.expenseAmount False
+                            expenseItem = ExpenseItem x.index x.expenseItem x.expenseAmount 
                             updatedExpenseItems = listHead ++ [expenseItem] ++ listTail
                         in
-                        {model 
+                        ({model 
                         |  expenseItems = updatedExpenseItems
                         , expense = model.expense
-                        , balance = model.balance}
+                        , balance = model.balance} ,Cmd.none
+                        )
 
 
                     Nothing ->
-                        model   
+                        (model ,Cmd.none
+                        )
 
-        UpdateAmount index value ->
+        SendHttpRequest ->
+            ( model, httpCommand )
+
+        
+        DataReceived (Ok expenseItems) ->
             let
-                updatedExpenseItems3 = List.filter (\expenseItem-> expenseItem.index == index) model.expenseItems
-                listHead = List.take index model.expenseItems
-                listTail = List.drop (index + 1) model.expenseItems
-                currentBudget = (Maybe.withDefault 0 (String.toInt value))
+                _ = Debug.log "A" expenseItems
             in
-                case (List.head updatedExpenseItems3) of
-                    Just x ->
-                        let
-                            expenseItem = ExpenseItem x.index x.expenseItem currentBudget x.editable
-                            updatedExpenseItems = listHead ++ [expenseItem] ++ listTail
-                        in
-                        {model 
-                        |  expenseItems = updatedExpenseItems
-                        , expense = model.expense
-                        , balance = model.balance }
+            ({model | expenseItems = expenseItems}
+               , Cmd.none
+            )
+        
+        DataReceived (Err httpError) ->
+            let
+                _ = Debug.log "A" httpError
+            in
+            (model
+               , Cmd.none
+            )    
+            
 
 
-                    Nothing ->
-                        model             
+        
 
-toTableRow : ExpenseItem -> Html Msg
-toTableRow expenseItem =
-    if expenseItem.editable == True then
-        toTableRowEdit expenseItem
-    else 
-        toTableRowNonEdit expenseItem 
+        -- UpdateAmount index value ->
+        --     let
+        --         updatedExpenseItems3 = List.filter (\expenseItem-> expenseItem.index == index) model.expenseItems
+        --         listHead = List.take index model.expenseItems
+        --         listTail = List.drop (index + 1) model.expenseItems
+        --         currentBudget = (Maybe.withDefault 0 (String.toInt value))
+        --     in
+        --         case (List.head updatedExpenseItems3) of
+        --             Just x ->
+        --                 let
+        --                     expenseItem = ExpenseItem x.index x.expenseItem currentBudget x.editable
+        --                     updatedExpenseItems = listHead++[expenseItem]++listTail
+        --                 in
+        --                 {model 
+        --                 |  expenseItems = updatedExpenseItems
+        --                 , expense = model.expense
+        --                 , balance = model.balance }
+
+
+        --             Nothing ->
+        --                 model             
+
+-- toTableRow : ExpenseItem -> Html Msg
+-- toTableRow expenseItem =
+--     if expenseItem.editable == True then
+--         toTableRowEdit expenseItem
+--     else 
+--         toTableRowNonEdit expenseItem 
+httpCommand : Cmd Msg
+httpCommand =
+    Http.get
+        { url = "http://localhost:4000/api/show_expenses"
+        , expect = Http.expectJson DataReceived (Json.Decode.field "data" (Json.Decode.list expenseDecoder))
+        }
+
+expenseDecoder : Decoder ExpenseItem
+expenseDecoder =
+    map3 ExpenseItem
+        (field "id" int)
+        (field "item" string)
+        (field "amount" int)
+
 
 toTableRowEdit : ExpenseItem -> Html Msg
 toTableRowEdit expenseItem =
@@ -198,7 +260,9 @@ toTableRowEdit expenseItem =
         , td [] [ text expenseItem.expenseItem ]
         , td [] [ text (String.fromInt expenseItem.expenseAmount) ]
         , td [] [
-            input[type_ "text", value (String.fromInt expenseItem.expenseAmount) , onInput (UpdateAmount expenseItem.index) ] []
+            input[type_ "text",  Html.Attributes.value ( String.fromInt expenseItem.expenseAmount) 
+            -- , onInput (UpdateAmount expenseItem.index) 
+            ] []
             ,button [onClick (CancelEdit expenseItem.index)] [text "Cancel"]
             , button [] [text "Submit"]
         ]
@@ -215,6 +279,16 @@ toTableRowNonEdit expenseItem =
             , button [onClick (Edit expenseItem.index)] [text "edit"]
         ]
         ]   
+viewExpenseItem : ExpenseItem -> Html Msg
+viewExpenseItem expenseItem  =
+    tr []
+        [ td []
+            [ text (String.fromInt expenseItem.index) ]
+        , td []
+            [ text expenseItem.expenseItem ]
+        , td []
+            [ text  (String.fromInt expenseItem.expenseAmount) ]
+        ]
 
 --VIEW
 
@@ -225,7 +299,7 @@ view model =
        h1 [] [text "TRACK YOUR BUDGET"]
         , div[class "form1"] [
            h2 [][text "Please Enter Your Budget"] 
-           , input [value (String.fromInt model.budget), onInput Budget] []
+           , input [Html.Attributes.value (String.fromInt model.budget), onInput Budget] []
             ]
        ,div [ class "bug-exp-bal"]
         [
@@ -250,11 +324,15 @@ view model =
         ]
         , div [ class "form2"][
                 h2 [] [text "Please Enter Your Expense"]
-                , input [value model.tempExpenseItem.expenseItem , onInput UpdateExpenseItem] []  
+                , input [Html.Attributes.value model.tempExpenseItem.expenseItem , onInput UpdateExpenseItem] []  
                 , h2 [] [text "Please Enter Your Expense Amount"]
-                , input [value  (String.fromInt model.tempExpenseItem.expenseAmount ), onInput UpdateExpenseAmount] []
+                , input [Html.Attributes.value (String.fromInt model.tempExpenseItem.expenseAmount ), onInput UpdateExpenseAmount] []
                 , button [ onClick Add][text "Add"]
 
+            ]
+        ,div []
+            [ button [ onClick SendHttpRequest ]
+                [ text "Get data from server" ]
             ]
         , div [] [ 
              table
@@ -265,7 +343,8 @@ view model =
                     , th [] [ text "Amount" ]
                     ]
                   ]
-                    ++ List.map toTableRow model.expenseItems  
+                    -- ++ List.map toTableRow model.expenseItems  
+                    ++ List.map viewExpenseItem model.expenseItems
                 )
         ]
     ]
