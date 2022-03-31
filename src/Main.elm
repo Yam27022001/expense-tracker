@@ -5,6 +5,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode exposing (Decoder,field,map3,string,int)
+import Json.Encode as Encode
 import Http
 
 
@@ -66,6 +67,7 @@ type Msg =
     | CancelEdit Int
     | SendHttpRequest
     | DataReceived (Result Http.Error (List ExpenseItem))
+    | ExpenseCreated (Result Http.Error ExpenseItem)
     -- | UpdateAmount Int String
     
         
@@ -104,20 +106,21 @@ update msg model =
 
        
         Add   -> 
-            let
-                updatedExpense = model.expense + model.tempExpenseItem.expenseAmount
-                currentIndex = model.index + 1
-                -- updatedExpenseItems =  model.expenseItems ++ [ExpenseItem model.tempExpenseItem.index model.tempExpenseItem.expenseItem model.tempExpenseItem.expenseAmount ]
-                updatedtempExpenseItem= ExpenseItem currentIndex "" 0 
-            in
-            ({  model
-                | index= model.index + 1
-                ,expenseItems = updatedExpenseItems
-                , expense =  updatedExpense
-                , balance = (model.budget - updatedExpense) 
-                ,tempExpenseItem = updatedtempExpenseItem
-            } ,Cmd.none
-            )
+            (model, httppostCommand model.tempExpenseItem) 
+            -- let
+            --     updatedExpense = model.expense + model.tempExpenseItem.expenseAmount
+            --     currentIndex = model.index + 1
+            --     -- updatedExpenseItems =  model.expenseItems ++ [ExpenseItem model.tempExpenseItem.index model.tempExpenseItem.expenseItem model.tempExpenseItem.expenseAmount ]
+            --     -- updatedtempExpenseItem= ExpenseItem currentIndex "" 0 
+            -- in
+            -- ({  model
+            --     | index= model.index + 1
+            --     ,expenseItems = updatedExpenseItems
+            --     , expense =  updatedExpense
+            --     , balance = (model.budget - updatedExpense) 
+            --     ,tempExpenseItem = updatedtempExpenseItem
+            -- } ,Cmd.none
+            -- )
         
         Delete index ->
             let 
@@ -206,9 +209,17 @@ update msg model =
                , Cmd.none
             )    
             
+        ExpenseCreated (Ok expenseItems) -> 
+            let
+                _ = Debug.log "A" expenseItems
+            in
+            (model, Cmd.none)
 
+        ExpenseCreated (Err error) ->
 
-        
+            ( model 
+            , Cmd.none
+            )
 
         -- UpdateAmount index value ->
         --     let
@@ -248,9 +259,25 @@ httpCommand =
 expenseDecoder : Decoder ExpenseItem
 expenseDecoder =
     map3 ExpenseItem
-        (field "id" int)
-        (field "item" string)
-        (field "amount" int)
+        (field "id" Json.Decode.int)
+        (field "item" Json.Decode.string)
+        (field "amount" Json.Decode.int)
+
+httppostCommand: ExpenseItem -> Cmd Msg
+httppostCommand expenseItem =
+    Http.post
+        { url = "http://localhost:4000/api/add_expense"
+        , body = Http.jsonBody (newExpenseEncoder expenseItem)
+        , expect = Http.expectJson ExpenseCreated expenseDecoder
+        }
+
+newExpenseEncoder: ExpenseItem -> Encode.Value
+newExpenseEncoder expenseItem =
+    Encode.object[("expense", Encode.object
+    [ 
+     ("item", Encode.string expenseItem.expenseItem)
+    ,("amount", Encode.int expenseItem.expenseAmount)
+    ])]
 
 
 toTableRowEdit : ExpenseItem -> Html Msg

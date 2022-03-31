@@ -6192,6 +6192,61 @@ var $author$project$Main$httpCommand = $elm$http$Http$get(
 				$elm$json$Json$Decode$list($author$project$Main$expenseDecoder))),
 		url: 'http://localhost:4000/api/show_expenses'
 	});
+var $author$project$Main$ExpenseCreated = function (a) {
+	return {$: 'ExpenseCreated', a: a};
+};
+var $elm$http$Http$jsonBody = function (value) {
+	return A2(
+		_Http_pair,
+		'application/json',
+		A2($elm$json$Json$Encode$encode, 0, value));
+};
+var $elm$json$Json$Encode$int = _Json_wrap;
+var $elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, obj) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$Main$newExpenseEncoder = function (expenseItem) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'expense',
+				$elm$json$Json$Encode$object(
+					_List_fromArray(
+						[
+							_Utils_Tuple2(
+							'item',
+							$elm$json$Json$Encode$string(expenseItem.expenseItem)),
+							_Utils_Tuple2(
+							'amount',
+							$elm$json$Json$Encode$int(expenseItem.expenseAmount))
+						])))
+			]));
+};
+var $elm$http$Http$post = function (r) {
+	return $elm$http$Http$request(
+		{body: r.body, expect: r.expect, headers: _List_Nil, method: 'POST', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
+};
+var $author$project$Main$httppostCommand = function (expenseItem) {
+	return $elm$http$Http$post(
+		{
+			body: $elm$http$Http$jsonBody(
+				$author$project$Main$newExpenseEncoder(expenseItem)),
+			expect: A2($elm$http$Http$expectJson, $author$project$Main$ExpenseCreated, $author$project$Main$expenseDecoder),
+			url: 'http://localhost:4000/api/add_expense'
+		});
+};
 var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$core$List$takeReverse = F3(
@@ -6370,20 +6425,9 @@ var $author$project$Main$update = F2(
 						{tempExpenseItem: updatedExpenseItem}),
 					$elm$core$Platform$Cmd$none);
 			case 'Add':
-				var updatedExpenseItems = _Utils_ap(
-					model.expenseItems,
-					_List_fromArray(
-						[
-							A3($author$project$Main$ExpenseItem, model.tempExpenseItem.index, model.tempExpenseItem.expenseItem, model.tempExpenseItem.expenseAmount)
-						]));
-				var updatedExpense = model.expense + model.tempExpenseItem.expenseAmount;
-				var currentIndex = model.index + 1;
-				var updatedtempExpenseItem = A3($author$project$Main$ExpenseItem, currentIndex, '', 0);
 				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{balance: model.budget - updatedExpense, expense: updatedExpense, expenseItems: updatedExpenseItems, index: model.index + 1, tempExpenseItem: updatedtempExpenseItem}),
-					$elm$core$Platform$Cmd$none);
+					model,
+					$author$project$Main$httppostCommand(model.tempExpenseItem));
 			case 'Delete':
 				var index = msg.a;
 				var updatedExpenseItems2 = A2(
@@ -6472,7 +6516,7 @@ var $author$project$Main$update = F2(
 				}
 			case 'SendHttpRequest':
 				return _Utils_Tuple2(model, $author$project$Main$httpCommand);
-			default:
+			case 'DataReceived':
 				if (msg.a.$ === 'Ok') {
 					var expenseItems = msg.a.a;
 					var _v4 = A2($elm$core$Debug$log, 'A', expenseItems);
@@ -6484,6 +6528,15 @@ var $author$project$Main$update = F2(
 				} else {
 					var httpError = msg.a.a;
 					var _v5 = A2($elm$core$Debug$log, 'A', httpError);
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
+			default:
+				if (msg.a.$ === 'Ok') {
+					var expenseItems = msg.a.a;
+					var _v6 = A2($elm$core$Debug$log, 'A', expenseItems);
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				} else {
+					var error = msg.a.a;
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
 		}
@@ -6500,7 +6553,6 @@ var $author$project$Main$UpdateExpenseItem = function (a) {
 	return {$: 'UpdateExpenseItem', a: a};
 };
 var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
