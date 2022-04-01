@@ -5339,6 +5339,7 @@ var $author$project$Main$init = function (_v0) {
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $author$project$Main$SendHttpRequest = {$: 'SendHttpRequest'};
 var $elm$core$List$drop = F2(
 	function (n, list) {
 		drop:
@@ -6532,11 +6533,15 @@ var $author$project$Main$update = F2(
 				}
 			default:
 				if (msg.a.$ === 'Ok') {
-					var expenseItems = msg.a.a;
-					var _v6 = A2($elm$core$Debug$log, 'A', expenseItems);
-					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+					var tempExpenseItem = msg.a.a;
+					var newCmd = A2(
+						$elm$core$Task$perform,
+						$elm$core$Basics$identity,
+						$elm$core$Task$succeed($author$project$Main$SendHttpRequest));
+					var _v6 = A2($elm$core$Debug$log, 'A', tempExpenseItem);
+					return _Utils_Tuple2(model, newCmd);
 				} else {
-					var error = msg.a.a;
+					var httpError = msg.a.a;
 					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 				}
 		}
@@ -6545,7 +6550,6 @@ var $author$project$Main$Add = {$: 'Add'};
 var $author$project$Main$Budget = function (a) {
 	return {$: 'Budget', a: a};
 };
-var $author$project$Main$SendHttpRequest = {$: 'SendHttpRequest'};
 var $author$project$Main$UpdateExpenseAmount = function (a) {
 	return {$: 'UpdateExpenseAmount', a: a};
 };

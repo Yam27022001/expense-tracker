@@ -7,6 +7,7 @@ import Html.Events exposing (..)
 import Json.Decode exposing (Decoder,field,map3,string,int)
 import Json.Encode as Encode
 import Http
+import Task
 
 
 
@@ -209,13 +210,18 @@ update msg model =
                , Cmd.none
             )    
             
-        ExpenseCreated (Ok expenseItems) -> 
+        ExpenseCreated (Ok tempExpenseItem) -> 
             let
-                _ = Debug.log "A" expenseItems
+                _ = Debug.log "A" tempExpenseItem
+                newCmd =  Task.succeed SendHttpRequest
+                    |> Task.perform identity
             in
-            (model, Cmd.none)
+            (model, newCmd)
 
-        ExpenseCreated (Err error) ->
+              
+             
+
+        ExpenseCreated (Err httpError) ->
 
             ( model 
             , Cmd.none
